@@ -2,6 +2,7 @@ import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useDependencies } from '@/core/di/DependenciesProvider';
+import { isMockFlavor } from '@/core/di/flavor';
 import { useMviEffect, useMviState, useMviStore } from '@/core/mvi/hooks';
 import { Button, ErrorBanner, showMessage, TextField } from '@/core/ui/components';
 import { spacing, useColors } from '@/core/ui/theme';
@@ -30,6 +31,11 @@ export function LoginScreen() {
           <Text style={{ color: colors.textMuted }}>
             {isSignIn ? 'Inicia sesión para sincronizar tus notas' : 'Crea tu cuenta'}
           </Text>
+          {isMockFlavor && (
+            <Text style={{ color: colors.primary }}>
+              Modo mock: cualquier correo válido y contraseña de 6+ caracteres funciona.
+            </Text>
+          )}
         </View>
 
         <TextField

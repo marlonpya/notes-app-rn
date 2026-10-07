@@ -94,11 +94,33 @@ store.dispatch({ type: 'DeleteNote', id });                    // intent
    npx expo start
    ```
 
+## Flavors: `mock` y `supabase`
+
+Equivalente a `productFlavors` de Gradle, elegido con `EXPO_PUBLIC_DATA_SOURCE`:
+
+| Android | Este proyecto |
+|---|---|
+| `productFlavors { mock; prod }` | `EXPO_PUBLIC_DATA_SOURCE=mock` (por defecto: Supabase) |
+| Módulo Hilt del flavor mock | [`src/core/di/mock/`](src/core/di/mock): `InMemoryNoteRepository`, `FakeAuthRepository`, `createMockContainer` |
+| `applicationIdSuffix ".mock"` | [`app.config.ts`](app.config.ts): `com.marlonpya.notesapprn.mock`, nombre "Notas (Mock)" |
+| Variante de build en CI | Perfil `mock` en [`eas.json`](eas.json) (APK interno) |
+
+```bash
+npm run start:mock      # o: npm run android:mock
+```
+
+- No necesita `.env`, red ni Supabase. Trae 3 notas de ejemplo y simula latencia y el estado "sin sincronizar".
+- Login: cualquier correo válido con contraseña de 6+ caracteres. La contraseña `fallar123` simula credenciales incorrectas.
+- Los datos viven en memoria y se reinician al recargar la app.
+- [`src/core/di/flavor.tsx`](src/core/di/flavor.tsx) elige el contenedor con `require` dentro de un **ternario**: Metro descarta la rama no usada, así que el bundle mock no incluye Supabase ni SQLite y el de producción no incluye mocks.
+- Las variables `EXPO_PUBLIC_*` se incrustan al compilar: al volver del modo mock al normal usa `npx expo start --clear`.
+
 ## Scripts
 
 | Script | Descripción |
 |---|---|
-| `npm start` | Servidor de desarrollo |
+| `npm start` | Servidor de desarrollo (Supabase) |
+| `npm run start:mock` / `android:mock` | Flavor mock, sin backend |
 | `npm test` | Tests unitarios (dominio, mappers, stores MVI) |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint (config de Expo) |
@@ -109,6 +131,7 @@ store.dispatch({ type: 'DeleteNote', id });                    // intent
 1. `domain/`: entidad, interfaz del repositorio y casos de uso.
 2. `data/`: tabla Drizzle (exportarla en `src/core/db/schema.ts`), DAO, datasource remoto,
    mapper e implementación del repositorio. Luego `npm run db:generate`.
-3. Registrar los casos de uso en `src/core/di/Dependencies.ts` y `container.ts`.
+3. Registrar los casos de uso en `src/core/di/Dependencies.ts`, `container.ts` y
+   `mock/mockContainer.ts` (con una implementación en memoria del repositorio).
 4. `presentation/`: contrato, store (`createMviStore`) y pantalla; la ruta en `src/app/`.
 5. Tests del store con un repositorio fake (ver `src/testing/`).

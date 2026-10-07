@@ -43,8 +43,9 @@ Docs: https://docs.expo.dev/eas/index.md
 ## Arquitectura de este proyecto
 
 - Clean Architecture por feature: `src/features/<feature>/{domain,data,presentation}`. `domain` no importa React, expo-* ni Supabase.
-- Presentación MVI: cada pantalla tiene `*Contract.ts` (State/Intent/Effect) y `*Store.ts` creado con `createMviStore` (`src/core/mvi`). Las pantallas solo leen estado y hacen `dispatch`.
-- DI manual: registrar casos de uso en `src/core/di/Dependencies.ts` y `container.ts`; consumir con `useDependencies()`.
+- Presentaciï¿½n MVI: cada pantalla tiene `*Contract.ts` (State/Intent/Effect) y `*Store.ts` creado con `createMviStore` (`src/core/mvi`). Las pantallas solo leen estado y hacen `dispatch`.
+- DI manual: registrar casos de uso en `src/core/di/Dependencies.ts`, `container.ts` y `mock/mockContainer.ts`; consumir con `useDependencies()`.
+- Flavors: `EXPO_PUBLIC_DATA_SOURCE=mock` usa `src/core/di/mock`. Nunca importes `container.ts`, `@/core/db/*` ni `@/core/supabase/*` estÃ¡ticamente fuera de `data/` y `container.ts`: romperÃ­a la exclusiÃ³n del bundle mock. Los errores del proveedor se traducen a errores de dominio en `data/`.
 - Datos offline-first: SQLite (Drizzle) es la fuente de verdad; tras cambiar una tabla ejecutar `npm run db:generate` y exportarla en `src/core/db/schema.ts`.
-- Cambios de esquema remoto: nueva migración en `supabase/migrations/`.
+- Cambios de esquema remoto: nueva migraciï¿½n en `supabase/migrations/`.
 - Antes de terminar: `npm run typecheck`, `npm run lint` y `npm test`.

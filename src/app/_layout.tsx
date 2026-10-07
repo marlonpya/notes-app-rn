@@ -1,34 +1,21 @@
-import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
-import { ActivityIndicator, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, useColorScheme, View } from 'react-native';
 
-import { db } from '@/core/db/client';
-import migrations from '@/core/db/migrations/migrations';
-import { createContainer } from '@/core/di/container';
 import { DependenciesProvider } from '@/core/di/DependenciesProvider';
+import { createAppContainer, DataLayerGate } from '@/core/di/flavor';
 import { useSession } from '@/features/auth/presentation/useSession';
 
-const container = createContainer();
+const container = createAppContainer();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  // Aplica las migraciones SQL generadas por drizzle-kit (≈ Room.migrations).
-  const { success, error } = useMigrations(db, migrations);
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <DependenciesProvider value={container}>
-        {error ? (
-          <Centered>
-            <Text>Error al preparar la base de datos: {error.message}</Text>
-          </Centered>
-        ) : success ? (
+        <DataLayerGate>
           <RootNavigator />
-        ) : (
-          <Centered>
-            <ActivityIndicator />
-          </Centered>
-        )}
+        </DataLayerGate>
       </DependenciesProvider>
     </ThemeProvider>
   );
@@ -39,9 +26,9 @@ function RootNavigator() {
 
   if (session.status === 'loading') {
     return (
-      <Centered>
+      <View style={styles.centered}>
         <ActivityIndicator />
-      </Centered>
+      </View>
     );
   }
 
@@ -60,10 +47,6 @@ function RootNavigator() {
   );
 }
 
-function Centered({ children }: { children: React.ReactNode }) {
-  return <View style={styles.centered}>{children}</View>;
-}
-
 const styles = StyleSheet.create({
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
+  centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });
