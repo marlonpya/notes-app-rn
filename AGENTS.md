@@ -39,3 +39,12 @@ Docs: https://docs.expo.dev/eas/index.md
 - If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand â€” configure native behavior in `app.json` and config plugins.
 - Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
 - Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+
+## Arquitectura de este proyecto
+
+- Clean Architecture por feature: `src/features/<feature>/{domain,data,presentation}`. `domain` no importa React, expo-* ni Supabase.
+- Presentación MVI: cada pantalla tiene `*Contract.ts` (State/Intent/Effect) y `*Store.ts` creado con `createMviStore` (`src/core/mvi`). Las pantallas solo leen estado y hacen `dispatch`.
+- DI manual: registrar casos de uso en `src/core/di/Dependencies.ts` y `container.ts`; consumir con `useDependencies()`.
+- Datos offline-first: SQLite (Drizzle) es la fuente de verdad; tras cambiar una tabla ejecutar `npm run db:generate` y exportarla en `src/core/db/schema.ts`.
+- Cambios de esquema remoto: nueva migración en `supabase/migrations/`.
+- Antes de terminar: `npm run typecheck`, `npm run lint` y `npm test`.
